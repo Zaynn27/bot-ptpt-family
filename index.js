@@ -10,7 +10,7 @@ async function startBot() {
   sock.ev.on('creds.update', saveCreds);
   
   if (!sock.authState.creds.registered) {
-    const phoneNumber = "6283190521078"; // <-- UDAH AKU ISI
+    const phoneNumber = "6283190521078"; 
     await delay(3000);
     const code = await sock.requestPairingCode(phoneNumber);
     console.log(`\n\n==========================`);
@@ -35,24 +35,27 @@ async function startBot() {
 
     if(command === '!list') { 
       let slotKosong = dataKas.filter(d => d.nama === '').length;
-      let pesan = `*OPEN BOOST SERVER X8* 🍀 \n ━━━━━━━━━━━━━━━━\n\n`;
-      pesan += `🔥 *24 JAM 15k*\n> # 👥 *SLOT:* *-${slotKosong}* 🍀 *SLOT*\n`;
-      pesan += `> 🕒 *Time: Selasa Pukul 20.00 wib* \n> ☁️ Full Cuaca | 📜 Free Script\n`;
-      pesan += `👥 *Daftar Player*\n`;
+      let pesan = `*OPEN BOOST SERVER X8*\n━━━━━━━━\n\n`;
+      pesan += `*24 JAM 15k*\n> # *SLOT:* *-${slotKosong}* *SLOT*\n`;
+      pesan += `> *Time: Selasa Pukul 20.00 wib* \n> Full Cuaca | Free Script\n`;
+      pesan += `*Daftar Player*\n`;
       dataKas.forEach(d => { let nama = d.nama === ''? '' : `*${d.nama}*`; pesan += `${d.slot}. ${nama}\n`; }); 
-      pesan += `\n🚀 *FULL GAS LANGSUNG!!*\n━━━━━━━━━━━━━━━━━━━━━━\n\n📝 *CARA ORDER:*\n1. Chat Admin cek ketersediaan slot.\n2. Transfer via *QRIS YG ADA DI PP GRUP*\n3. Kirim bukti *Transfer* dan *Username Roblox* Ke admin\n4. *Sudah Pay* ✅`;
+      pesan += `\n*FULL GAS LANGSUNG!!*\n━━━━━━━━━━\n\n*CARA ORDER:*\n1. Chat Admin cek ketersediaan slot.\n2. Transfer via *QRIS YG ADA DI PP GRUP*\n3. Kirim bukti *Transfer* dan *Username Roblox* Ke admin\n4. *Sudah Pay*`;
       sock.sendMessage(chat, {text: pesan}); 
     }
     if(command === '!join') { 
       const nama = args[1]; 
       const slotKosong = dataKas.find(d => d.nama === ''); 
-      if(slotKosong) { slotKosong.nama = nama; sock.sendMessage(chat, {text: `✅ *${nama}* masuk Slot ${slotKosong.slot}`}); } 
-      else { sock.sendMessage(chat, {text: '❌ Slot penuh! 20/20 sudah terisi'}); }
+      if(slotKosong) { slotKosong.nama = nama; sock.sendMessage(chat, {text: `*${nama}* masuk Slot ${slotKosong.slot}`}); } 
+      else { sock.sendMessage(chat, {text: 'Slot penuh! 20/20 sudah terisi'}); }
     }
     if(command === '!bayar') { 
       const jumlah = parseInt(args[1]); 
       const member = dataKas.find(d => d.nama.toLowerCase() === senderName.toLowerCase()); 
-      if(member) { member.bayar += jumlah; sock.sendMessage(chat, {text: `✅ *${senderName}* Sudah Pay Rp ${jumlah.toLocaleString()} \nSlot ${member.slot} ✅`}); } 
-      else { sock.sendMessage(chat, {text: '❌ Kamu belum join dulu. Ketik!join Namamu'}); }
+      if(member) { member.bayar += jumlah; sock.sendMessage(chat, {text: `*${senderName}* Sudah Pay Rp ${jumlah.toLocaleString()} \nSlot ${member.slot}`}); } 
+      else { sock.sendMessage(chat, {text: 'Kamu belum join dulu. Ketik!join Namamu'}); }
     }
-    if(command === '!reset') { resetData(); sock.sendMessage(chat, {text: '🧹 DATA DIBERSIHKAN!\n20 Slot sudah direset\nSiap open
+    if(command === '!reset') { resetData(); sock.sendMessage(chat, {text: 'DATA DIBERSIHKAN!\n20 Slot sudah direset\nSiap open boost baru!'}); }
+  });
+}
+startBot();
