@@ -1,23 +1,22 @@
 const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
+const fs = require('fs');
 
 let dataKas = [];
-for(let i = 1; i <= 20; i++) {
-  dataKas.push({slot: i, nama: '', bayar: 0});
-}
-
-function resetData() { 
-  dataKas.forEach(d => { d.nama = ''; d.bayar = 0; }); 
-}
+for(let i = 1; i <= 20; i++) { dataKas.push({slot: i, nama: '', bayar: 0}); }
+function resetData() { dataKas.forEach(d => { d.nama = ''; d.bayar = 0; }); }
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('./auth');
-  const sock = makeWASocket({ auth: state, printQRInTerminal: true });
+  const sock = makeWASocket({ auth: state }); // hapus printQRInTerminal
   sock.ev.on('creds.update', saveCreds);
   
   sock.ev.on('connection.update', (update) => { 
     const { connection, qr } = update; 
-    if(qr) qrcode.generate(qr, {small: true}); 
+    if(qr) {
+      console.log("QR BARU MUNCUL!");
+      qrcode.generate(qr, {small: true}); 
+    }
     if(connection === 'open') console.log('Bot Open Boost Online!'); 
   });
 
@@ -29,7 +28,6 @@ async function startBot() {
     const senderName = msg.pushName || 'Member';
 
     if(!text.startsWith('!')) return;
-
     const args = text.split(' ');
     const command = args[0];
 
@@ -42,12 +40,10 @@ async function startBot() {
       pesan += `> ☁️ Full Cuaca | 📜 Free Script\n`;
       pesan += `> 🔗 Webhook | 🔄 Bisa Ganti Akun\n`;
       pesan += `👥 *Daftar Player*\n`;
-      
       dataKas.forEach(d => { 
         let nama = d.nama === ''? '' : `*${d.nama}*`;
         pesan += `${d.slot}. ${nama}\n`; 
       }); 
-      
       pesan += `\n🚀 *FULL GAS LANGSUNG!!*\n`;
       pesan += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
       pesan += `📝 *CARA ORDER:*\n`;
@@ -55,10 +51,8 @@ async function startBot() {
       pesan += `2. Transfer via *QRIS YG ADA DI PP GRUP*\n`;
       pesan += `3. Kirim bukti *Transfer* dan *Username Roblox* Ke admin\n`;
       pesan += `4. *Sudah Pay* ✅`;
-
       sock.sendMessage(chat, {text: pesan}); 
     }
-
     if(command === '!join') { 
       const nama = args[1]; 
       const slotKosong = dataKas.find(d => d.nama === ''); 
@@ -69,7 +63,6 @@ async function startBot() {
         sock.sendMessage(chat, {text: '❌ Slot penuh! 20/20 sudah terisi'}); 
       }
     }
-
     if(command === '!bayar') { 
       const jumlah = parseInt(args[1]); 
       const member = dataKas.find(d => d.nama.toLowerCase() === senderName.toLowerCase()); 
@@ -80,11 +73,10 @@ async function startBot() {
         sock.sendMessage(chat, {text: '❌ Kamu belum join dulu. Ketik!join Namamu'}); 
       }
     }
-
     if(command === '!reset') { 
       resetData(); 
       sock.sendMessage(chat, {text: '🧹 DATA DIBERSIHKAN!\n20 Slot sudah direset\nSiap open boost baru!'}); 
     }
-  }); // <-- ini kurung tutup messages.upsert
-} // <-- ini kurung tutup startBot
-startBot(); // <-- ini pemanggilnya
+  });
+}
+startBot();
