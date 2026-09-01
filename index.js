@@ -14,7 +14,7 @@ async function startBot() {
   sock.ev.on('creds.update', saveCreds);
   
   if (!sock.authState.creds.registered) {
-    const phoneNumber = await question('6283190521078: ');
+    const phoneNumber = await question('Masukkan nomor WA bot kamu 6283190521078: ');
     await delay(2000);
     const code = await sock.requestPairingCode(phoneNumber);
     console.log(`\n\n KODE PAIRING KAMU: ${code} \n\n`);
