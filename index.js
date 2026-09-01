@@ -35,12 +35,12 @@ async function startBot() {
 
     if(command === '!list') { 
       let slotKosong = dataKas.filter(d => d.nama === '').length;
-      let pesan = `*OPEN BOOST SERVER X8* 🍀 \n ━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      let pesan = `*OPEN BOOST SERVER X8* 🍀 \n ━━━━━━━━━━━━━━━━\n\n`;
       pesan += `🔥 *24 JAM 15k*\n`;
       pesan += `> # 👥 *SLOT:* *-${slotKosong}* 🍀 *SLOT*\n`;
       pesan += `> 🕒 *Time: Selasa Pukul 20.00 wib* \n`;
       pesan += `> ☁️ Full Cuaca | 📜 Free Script\n`;
-      pesan += `> 🔗 Webhook | 🔄 Bisa Ganti Akun\n\n`;
+      pesan += `> 🔗 Webhook | 🔄 Bisa Ganti Akun\n`;
       pesan += `👥 *Daftar Player*\n`;
       
       dataKas.forEach(d => { 
@@ -85,3 +85,6 @@ async function startBot() {
       resetData(); 
       sock.sendMessage(chat, {text: '🧹 DATA DIBERSIHKAN!\n20 Slot sudah direset\nSiap open boost baru!'}); 
     }
+  }); // <-- ini kurung tutup messages.upsert
+} // <-- ini kurung tutup startBot
+startBot(); // <-- ini pemanggilnya
