@@ -1,15 +1,13 @@
 const { default: makeWASocket, useMultiFileAuthState } = require('@whiskeysockets/baileys');
 const qrcode = require('qrcode-terminal');
 
-let dataKas = [
-  {slot: 1, nama: 'Kosong', bayar: 0},
-  {slot: 2, nama: 'Kosong', bayar: 0},
-  {slot: 3, nama: 'Kosong', bayar: 0},
-  {slot: 4, nama: 'Kosong', bayar: 0}
-];
+let dataKas = [];
+for(let i = 1; i <= 20; i++) {
+  dataKas.push({slot: i, nama: '', bayar: 0});
+}
 
 function resetData() { 
-  dataKas.forEach(d => { d.nama = 'Kosong'; d.bayar = 0; }); 
+  dataKas.forEach(d => { d.nama = ''; d.bayar = 0; }); 
 }
 
 async function startBot() {
@@ -20,7 +18,7 @@ async function startBot() {
   sock.ev.on('connection.update', (update) => { 
     const { connection, qr } = update; 
     if(qr) qrcode.generate(qr, {small: true}); 
-    if(connection === 'open') console.log('Bot Kas Online!'); 
+    if(connection === 'open') console.log('Bot Open Boost Online!'); 
   });
 
   sock.ev.on('messages.upsert', async m => {
@@ -30,40 +28,24 @@ async function startBot() {
     const text = msg.message.conversation || ''; 
     const senderName = msg.pushName || 'Member';
 
-    if(text === '.list') { 
-      let pesan = "DAFTAR KAS PTPT FAMILY\n"; 
+    if(!text.startsWith('!')) return;
+
+    const args = text.split(' ');
+    const command = args[0];
+
+    if(command === '!list') { 
+      let slotKosong = dataKas.filter(d => d.nama === '').length;
+      let pesan = `*OPEN BOOST SERVER X8* 🍀 \n ━━━━━━━━━━━━━━━━\n\n`; // INI UDAH DIHAPUS SERVER 1
+      pesan += `🔥 *24 JAM 15k*\n`;
+      pesan += `> # 👥 *SLOT:* *-${slotKosong}* 🍀 *SLOT*\n`;
+      pesan += `> 🕒 *Time: Selasa Pukul 20.00 wib* \n`;
+      pesan += `> ☁️ Full Cuaca | 📜 Free Script\n`;
+      pesan += `> 🔗 Webhook | 🔄 Bisa Ganti Akun\n\n\n`;
+      pesan += `👥 *Daftar Player*\n`;
+      
       dataKas.forEach(d => { 
-        pesan += `Slot ${d.slot}: ${d.nama} - Rp ${d.bayar.toLocaleString()}\n`; 
+        let nama = d.nama === ''? '' : `*${d.nama}*`;
+        pesan += `${d.slot}. ${nama}\n`; 
       }); 
-      sock.sendMessage(chat, {text: pesan}); 
-    }
-
-    if(text.startsWith('.join ')) { 
-      const nama = text.split(' ')[1]; 
-      const slotKosong = dataKas.find(d => d.nama === 'Kosong'); 
-      if(slotKosong) { 
-        slotKosong.nama = nama; 
-        sock.sendMessage(chat, {text: `✅ ${nama} masuk Slot ${slotKosong.slot}`}); 
-      } else { 
-        sock.sendMessage(chat, {text: '❌ Slot penuh!'}); 
-      }
-    }
-
-    if(text.startsWith('.bayar ')) { 
-      const jumlah = parseInt(text.split(' ')[1]); 
-      const member = dataKas.find(d => d.nama.toLowerCase() === senderName.toLowerCase()); 
-      if(member) { 
-        member.bayar += jumlah; 
-        sock.sendMessage(chat, {text: `✅ Terima kasih ${senderName} \nBayar: Rp ${jumlah.toLocaleString()} | Total: Rp ${member.bayar.toLocaleString()}`}); 
-      } else { 
-        sock.sendMessage(chat, {text: '❌ Kamu belum join dulu ya'}); 
-      }
-    }
-
-    if(text === '.reset') { 
-      resetData(); 
-      sock.sendMessage(chat, {text: '🧹 DATA KAS DIBERSIHKAN! \nSemua total bayar sudah di reset ke 0\nSiap untuk bulan baru!'}); 
-    }
-  });
-}
-startBot();
+      
+      pesan += `\n🚀 *FULL
