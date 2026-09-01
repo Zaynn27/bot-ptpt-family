@@ -1,12 +1,8 @@
 const { default: makeWASocket, useMultiFileAuthState, delay } = require('@whiskeysockets/baileys');
-const readline = require('readline');
 
 let dataKas = [];
 for(let i = 1; i <= 20; i++) { dataKas.push({slot: i, nama: '', bayar: 0}); }
 function resetData() { dataKas.forEach(d => { d.nama = ''; d.bayar = 0; }); }
-
-const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-const question = (text) => new Promise((resolve) => rl.question(text, resolve));
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('./auth');
@@ -14,11 +10,12 @@ async function startBot() {
   sock.ev.on('creds.update', saveCreds);
   
   if (!sock.authState.creds.registered) {
-    const phoneNumber = await question('Masukkan nomor WA bot kamu 6283190521078: ');
-    await delay(2000);
+    const phoneNumber = "6283190521078"; // <-- UDAH AKU ISI
+    await delay(3000);
     const code = await sock.requestPairingCode(phoneNumber);
-    console.log(`\n\n KODE PAIRING KAMU: ${code} \n\n`);
-    console.log(`Buka WA > Perangkat Tertaut > Tautkan dengan nomor telepon`);
+    console.log(`\n\n==========================`);
+    console.log(` KODE PAIRING KAMU: ${code}`);
+    console.log(`==========================\n\n`);
   }
 
   sock.ev.on('connection.update', (update) => { 
@@ -43,7 +40,7 @@ async function startBot() {
       pesan += `> 🕒 *Time: Selasa Pukul 20.00 wib* \n> ☁️ Full Cuaca | 📜 Free Script\n`;
       pesan += `👥 *Daftar Player*\n`;
       dataKas.forEach(d => { let nama = d.nama === ''? '' : `*${d.nama}*`; pesan += `${d.slot}. ${nama}\n`; }); 
-      pesan += `\n🚀 *FULL GAS LANGSUNG!!*\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📝 *CARA ORDER:*\n1. Chat Admin cek ketersediaan slot.\n2. Transfer via *QRIS YG ADA DI PP GRUP*\n3. Kirim bukti *Transfer* dan *Username Roblox* Ke admin\n4. *Sudah Pay* ✅`;
+      pesan += `\n🚀 *FULL GAS LANGSUNG!!*\n━━━━━━━━━━━━━━━━━━━━━━\n\n📝 *CARA ORDER:*\n1. Chat Admin cek ketersediaan slot.\n2. Transfer via *QRIS YG ADA DI PP GRUP*\n3. Kirim bukti *Transfer* dan *Username Roblox* Ke admin\n4. *Sudah Pay* ✅`;
       sock.sendMessage(chat, {text: pesan}); 
     }
     if(command === '!join') { 
@@ -58,7 +55,4 @@ async function startBot() {
       if(member) { member.bayar += jumlah; sock.sendMessage(chat, {text: `✅ *${senderName}* Sudah Pay Rp ${jumlah.toLocaleString()} \nSlot ${member.slot} ✅`}); } 
       else { sock.sendMessage(chat, {text: '❌ Kamu belum join dulu. Ketik!join Namamu'}); }
     }
-    if(command === '!reset') { resetData(); sock.sendMessage(chat, {text: '🧹 DATA DIBERSIHKAN!\n20 Slot sudah direset\nSiap open boost baru!'}); }
-  });
-}
-startBot();
+    if(command === '!reset') { resetData(); sock.sendMessage(chat, {text: '🧹 DATA DIBERSIHKAN!\n20 Slot sudah direset\nSiap open
