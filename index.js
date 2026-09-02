@@ -1,17 +1,5 @@
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, delay } = require('@whiskeysockets/baileys');
-const express = require('express');
-const fs = require('fs');
-
-// === 1. SERVER BUAT UPTIMEROBOT BIAR GA TIDUR ===
-const app = express();
-const PORT = process.env.PORT || 3000;
-app.get('/', (req, res) => {
-    res.send('Bot Open Boost Aktif ✅');
-});
-app.listen(PORT, () => {
-    console.log(`Server web jalan di port ${PORT}`);
-});
-// =================================================
+const fs = require('fs'); // BUAT CEK UDAH LOGIN ATAU BELUM
+const { default: makeWASocket, useMultiFileAuthState, delay } = require('@whiskeysockets/baileys');
 
 // DATA 2 SERVER
 let server1 = [];
@@ -38,101 +26,90 @@ function buatList(namaServer, data) {
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('./auth');
-  const sock = makeWASocket({
-    auth: state,
-    printQRInTerminal: false
-  });
-
+  const sock = makeWASocket({ auth: state });
   sock.ev.on('creds.update', saveCreds);
 
-  // PAIRING CODE
-  if (!sock.authState.creds.registered) {
-    const phoneNumber = "6283190521078"; // GANTI NOMOR KAMU
+  // KODE PAIRING BUAT RAILWAY - AUTO BACA DARI VARIABLE
+  const pairingNumber = process.env.PAIRING_NUMBER;
+  if (pairingNumber &&!fs.existsSync('./auth/creds.json')) {
     await delay(3000);
-    const code = await sock.requestPairingCode(phoneNumber);
+    const code = await sock.requestPairingCode(pairingNumber);
     console.log(`\n\n==============================`);
-    console.log(` 🍀 SALIN KODE INI: ${code} `);
-    console.log(` 🍀 Tempel di WA > Perangkat Tertaut`);
+    console.log(` KODE PAIRING KAMU: ${code} `);
+    console.log(` KODE INI GA GANTI2 SEBELUM DI SCAN`);
     console.log(`==============================\n\n`);
   }
 
-  // AUTO RECONNECT
   sock.ev.on('connection.update', (update) => {
-    const { connection, lastDisconnect } = update;
-    if(connection === 'open') console.log('Bot Open Boost Online! ✅');
-
-    if (connection === 'close') {
-      const shouldReconnect = (lastDisconnect.error)?.output?.statusCode!== DisconnectReason.loggedOut;
-      console.log('Koneksi putus. Reconnect:', shouldReconnect);
-      if(shouldReconnect) startBot();
-    }
+    if(update.connection === 'open') console.log('Bot Open Boost Online!');
   });
 
   sock.ev.on('messages.upsert', async m => {
     const msg = m.messages[0];
     if (!msg.message) return;
     const chat = msg.key.remoteJid;
-    const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
+    const text = msg.message.conversation || '';
     const senderName = msg.pushName || 'Member';
 
     if(!text.startsWith('!')) return;
-    const args = text.trim().split(' ');
-    const command = args[0].toLowerCase();
+    const args = text.split(' ');
+    const command = args[0];
 
-    try {
-      //!list1 atau!list2
-      if(command === '!list1') {
-        let pesan = buatList('SERVER 1', server1);
-        pesan += `\n*CARA ORDER:*\n1. Chat Admin cek slot\n2. Transfer via *QRIS DI PP GRUP*\n3. Kirim bukti + *Username Roblox*`;
-        await sock.sendMessage(chat, {text: pesan});
-      }
-      if(command === '!list2') {
-        let pesan = buatList('SERVER 2', server2);
-        pesan += `\n*CARA ORDER:*\n1. Chat Admin cek slot\n2. Transfer via *QRIS DI PP GRUP*\n3. Kirim bukti + *Username Roblox*`;
-        await sock.sendMessage(chat, {text: pesan});
-      }
+    if(command === '!list1') {
+      let pesan = buatList('SERVER 1', server1);
+      pesan += `\n*CARA ORDER:*\n1. Chat Admin cek slot\n2. Transfer via *QRIS DI PP GRUP*\n3. Kirim bukti + *Username Roblox*`;
+      sock.sendMessage(chat, {text: pesan});
+    }
+    if(command === '!list2') {
+      let pesan = buatList('SERVER 2', server2);
+      pesan += `\n*CARA ORDER:*\n1. Chat Admin cek slot\n2. Transfer via *QRIS DI PP GRUP*\n3. Kirim bukti + *Username Roblox*`;
+      sock.sendMessage(chat, {text: pesan});
+    }
 
-      //!join1 Nama atau!join2 Nama
-      if(command === '!join1') {
-        const nama = args.slice(1).join(' ');
-        if(!nama) return sock.sendMessage(chat, {text: '❌ Format:!join1 Namamu'});
-        const slotKosong = server1.find(d => d.nama === '');
-        if(slotKosong) { slotKosong.nama = nama; await sock.sendMessage(chat, {text: `✅ *${nama}* masuk SERVER 1 Slot ${slotKosong.slot}`}); }
-        else { await sock.sendMessage(chat, {text: '❌ SERVER 1 Penuh! 20/20'}); }
-      }
-      if(command === '!join2') {
-        const nama = args.slice(1).join(' ');
-        if(!nama) return sock.sendMessage(chat, {text: '❌ Format:!join2 Namamu'});
-        const slotKosong = server2.find(d => d.nama === '');
-        if(slotKosong) { slotKosong.nama = nama; await sock.sendMessage(chat, {text: `✅ *${nama}* masuk SERVER 2 Slot ${slotKosong.slot}`}); }
-        else { await sock.sendMessage(chat, {text: '❌ SERVER 2 Penuh! 20/20'}); }
-      }
+    if(command === '!join1') {
+      const nama = args[1];
+      const slotKosong = server1.find(d => d.nama === '');
+      if(slotKosong) { slotKosong.nama = nama; sock.sendMessage(chat, {text: `✅ *${nama}* masuk SERVER 1 Slot ${slotKosong.slot}`}); }
+      else { sock.sendMessage(chat, {text: '❌ SERVER 1 Penuh! 20/20'}); }
+    }
+    if(command === '!join2') {
+      const nama = args[1];
+      const slotKosong = server2.find(d => d.nama === '');
+      if(slotKosong) { slotKosong.nama = nama; sock.sendMessage(chat, {text: `✅ *${nama}* masuk SERVER 2 Slot ${slotKosong.slot}`}); }
+      else { sock.sendMessage(chat, {text: '❌ SERVER 2 Penuh! 20/20'}); }
+    }
 
-      //!bayar1 15000 atau!bayar2 15000
-      if(command === '!bayar1') {
-        const jumlah = parseInt(args[1]);
-        if(!jumlah) return sock.sendMessage(chat, {text: '❌ Format:!bayar1 15000'});
-        const member = server1.find(d => d.nama.toLowerCase() === senderName.toLowerCase());
-        if(member) { member.bayar += jumlah; await sock.sendMessage(chat, {text: `✅ *${senderName}* Sudah Pay Rp ${jumlah.toLocaleString('id-ID')} \nSERVER 1 Slot ${member.slot}`}); }
-        else { await sock.sendMessage(chat, {text: '❌ Kamu belum join SERVER 1 dulu. Ketik!join1 Namamu'}); }
-      }
-      if(command === '!bayar2') {
-        const jumlah = parseInt(args[1]);
-        if(!jumlah) return sock.sendMessage(chat, {text: '❌ Format:!bayar2 15000'});
-        const member = server2.find(d => d.nama.toLowerCase() === senderName.toLowerCase());
-        if(member) { member.bayar += jumlah; await sock.sendMessage(chat, {text: `✅ *${senderName}* Sudah Pay Rp ${jumlah.toLocaleString('id-ID')} \nSERVER 2 Slot ${member.slot}`}); }
-        else { await sock.sendMessage(chat, {text: '❌ Kamu belum join SERVER 2 dulu. Ketik!join2 Namamu'}); }
-      }
+    if(command === '!bayar1') {
+      const jumlah = parseInt(args[1]);
+      const member = server1.find(d => d.nama.toLowerCase() === senderName.toLowerCase());
+      if(member) { member.bayar += jumlah; sock.sendMessage(chat, {text: `✅ *${senderName}* Sudah Pay Rp ${jumlah.toLocaleString()} \nSERVER 1 Slot ${member.slot}`}); }
+      else { sock.sendMessage(chat, {text: '❌ Kamu belum join SERVER 1 dulu. Ketik!join1 Namamu'}); }
+    }
+    if(command === '!bayar2') {
+      const jumlah = parseInt(args[1]);
+      const member = server2.find(d => d.nama.toLowerCase() === senderName.toLowerCase());
+      if(member) { member.bayar += jumlah; sock.sendMessage(chat, {text: `✅ *${senderName}* Sudah Pay Rp ${jumlah.toLocaleString()} \nSERVER 2 Slot ${member.slot}`}); }
+      else { sock.sendMessage(chat, {text: '❌ Kamu belum join SERVER 2 dulu. Ketik!join2 Namamu'}); }
+    }
 
-      // RESET SEMUA
-      if(command === '!reset') {
-        resetData();
-        await sock.sendMessage(chat, {text: 'DATA DIBERSIHKAN!\nSERVER 1 & SERVER 2 sudah direset\nSiap open boost baru!'});
-      }
-    } catch (e) {
-      console.log(e)
+    if(command === '!reset') {
+      resetData();
+      sock.sendMessage(chat, {text: 'DATA DIBERSIHKAN!\nSERVER 1 & SERVER 2 sudah direset\nSiap open boost baru!'});
     }
   });
 }
-
 startBot();
+
+// === KODE BUAT UPTIMEROBOT BIAR GA TIDUR ===
+const express = require('express')
+const app = express()
+const PORT = process.env.PORT || 3000
+
+app.get('/', (req, res) => {
+    res.send('Bot WA Aktif ✅')
+})
+
+app.listen(PORT, () => {
+    console.log(`Server web jalan di port ${PORT}`)
+})
+// =============================================
