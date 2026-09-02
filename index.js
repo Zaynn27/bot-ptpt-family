@@ -1,4 +1,9 @@
 const fs = require('fs'); // BUAT CEK UDAH LOGIN ATAU BELUM
+if (!fs.existsSync('./auth')){ 
+    fs.mkdirSync('./auth');    
+}
+const { default: makeWASocket, useMultiFileAuthState, delay } = require('@whiskeysockets/baileys');
+const fs = require('fs'); // BUAT CEK UDAH LOGIN ATAU BELUM
 const { default: makeWASocket, useMultiFileAuthState, delay } = require('@whiskeysockets/baileys');
 
 // DATA 2 SERVER
