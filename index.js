@@ -1,10 +1,9 @@
 const fs = require('fs'); // BUAT CEK UDAH LOGIN ATAU BELUM
 if (!fs.existsSync('./auth')){ 
-    fs.mkdirSync('./auth');    
+    fs.mkdirSync('./auth'); 
 }
 const { default: makeWASocket, useMultiFileAuthState, delay } = require('@whiskeysockets/baileys');
-const fs = require('fs'); // BUAT CEK UDAH LOGIN ATAU BELUM
-const { default: makeWASocket, useMultiFileAuthState, delay } = require('@whiskeysockets/baileys');
+const express = require('express');
 
 // DATA 2 SERVER
 let server1 = [];
@@ -53,7 +52,7 @@ async function startBot() {
     const msg = m.messages[0];
     if (!msg.message) return;
     const chat = msg.key.remoteJid;
-    const text = msg.message.conversation || '';
+    const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
     const senderName = msg.pushName || 'Member';
 
     if(!text.startsWith('!')) return;
@@ -72,13 +71,13 @@ async function startBot() {
     }
 
     if(command === '!join1') {
-      const nama = args[1];
+      const nama = args.slice(1).join(' ');
       const slotKosong = server1.find(d => d.nama === '');
       if(slotKosong) { slotKosong.nama = nama; sock.sendMessage(chat, {text: `✅ *${nama}* masuk SERVER 1 Slot ${slotKosong.slot}`}); }
       else { sock.sendMessage(chat, {text: '❌ SERVER 1 Penuh! 20/20'}); }
     }
     if(command === '!join2') {
-      const nama = args[1];
+      const nama = args.slice(1).join(' ');
       const slotKosong = server2.find(d => d.nama === '');
       if(slotKosong) { slotKosong.nama = nama; sock.sendMessage(chat, {text: `✅ *${nama}* masuk SERVER 2 Slot ${slotKosong.slot}`}); }
       else { sock.sendMessage(chat, {text: '❌ SERVER 2 Penuh! 20/20'}); }
@@ -106,7 +105,6 @@ async function startBot() {
 startBot();
 
 // === KODE BUAT UPTIMEROBOT BIAR GA TIDUR ===
-const express = require('express')
 const app = express()
 const PORT = process.env.PORT || 3000
 
