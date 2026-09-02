@@ -1,8 +1,27 @@
 const { default: makeWASocket, useMultiFileAuthState, delay } = require('@whiskeysockets/baileys');
 
-let dataKas = [];
-for(let i = 1; i <= 20; i++) { dataKas.push({slot: i, nama: '', bayar: 0}); }
-function resetData() { dataKas.forEach(d => { d.nama = ''; d.bayar = 0; }); }
+// DATA 2 SERVER
+let server1 = [];
+let server2 = [];
+for(let i = 1; i <= 20; i++) { 
+  server1.push({slot: i, nama: '', bayar: 0}); 
+  server2.push({slot: i, nama: '', bayar: 0}); 
+}
+
+function resetData() { 
+  server1.forEach(d => { d.nama = ''; d.bayar = 0; }); 
+  server2.forEach(d => { d.nama = ''; d.bayar = 0; }); 
+}
+
+function buatList(namaServer, data) {
+  let slotKosong = data.filter(d => d.nama === '').length;
+  let pesan = `*OPEN BOOST ${namaServer}* 🍀\n━━━━━━━━\n\n`;
+  pesan += `*24 JAM 15k*\n> # *SLOT:* *-${slotKosong}* *SLOT KOSONG*\n`;
+  pesan += `> *Time: Selasa Pukul 20.00 wib* \n> Full Cuaca | Free Script\n`;
+  pesan += `*Daftar Player*\n`;
+  data.forEach(d => { let nama = d.nama === ''? '-' : `*${d.nama}*`; pesan += `${d.slot}. ${nama}\n`; }); 
+  return pesan;
+}
 
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState('./auth');
@@ -13,9 +32,9 @@ async function startBot() {
     const phoneNumber = "6283190521078"; 
     await delay(3000);
     const code = await sock.requestPairingCode(phoneNumber);
-    console.log(`\n\n==========================`);
-    console.log(` KODE PAIRING KAMU: ${code}`);
-    console.log(`==========================\n\n`);
+    console.log(`\n\n==============================`);
+    console.log(` SALIN KODE INI: ${code} `);
+    console.log(`==============================\n\n`);
   }
 
   sock.ev.on('connection.update', (update) => { 
@@ -33,29 +52,51 @@ async function startBot() {
     const args = text.split(' ');
     const command = args[0];
 
-    if(command === '!list') { 
-      let slotKosong = dataKas.filter(d => d.nama === '').length;
-      let pesan = `*OPEN BOOST SERVER X8*\n━━━━━━━━\n\n`;
-      pesan += `*24 JAM 15k*\n> # *SLOT:* *-${slotKosong}* *SLOT*\n`;
-      pesan += `> *Time: Selasa Pukul 20.00 wib* \n> Full Cuaca | Free Script\n`;
-      pesan += `*Daftar Player*\n`;
-      dataKas.forEach(d => { let nama = d.nama === ''? '' : `*${d.nama}*`; pesan += `${d.slot}. ${nama}\n`; }); 
-      pesan += `\n*FULL GAS LANGSUNG!!*\n━━━━━━━━━━\n\n*CARA ORDER:*\n1. Chat Admin cek ketersediaan slot.\n2. Transfer via *QRIS YG ADA DI PP GRUP*\n3. Kirim bukti *Transfer* dan *Username Roblox* Ke admin\n4. *Sudah Pay*`;
+    //!list1 atau!list2
+    if(command === '!list1') { 
+      let pesan = buatList('SERVER 1', server1);
+      pesan += `\n*CARA ORDER:*\n1. Chat Admin cek slot\n2. Transfer via *QRIS DI PP GRUP*\n3. Kirim bukti + *Username Roblox*`;
       sock.sendMessage(chat, {text: pesan}); 
     }
-    if(command === '!join') { 
+    if(command === '!list2') { 
+      let pesan = buatList('SERVER 2', server2);
+      pesan += `\n*CARA ORDER:*\n1. Chat Admin cek slot\n2. Transfer via *QRIS DI PP GRUP*\n3. Kirim bukti + *Username Roblox*`;
+      sock.sendMessage(chat, {text: pesan}); 
+    }
+
+    //!join1 Nama atau!join2 Nama
+    if(command === '!join1') { 
       const nama = args[1]; 
-      const slotKosong = dataKas.find(d => d.nama === ''); 
-      if(slotKosong) { slotKosong.nama = nama; sock.sendMessage(chat, {text: `*${nama}* masuk Slot ${slotKosong.slot}`}); } 
-      else { sock.sendMessage(chat, {text: 'Slot penuh! 20/20 sudah terisi'}); }
+      const slotKosong = server1.find(d => d.nama === ''); 
+      if(slotKosong) { slotKosong.nama = nama; sock.sendMessage(chat, {text: `✅ *${nama}* masuk SERVER 1 Slot ${slotKosong.slot}`}); } 
+      else { sock.sendMessage(chat, {text: '❌ SERVER 1 Penuh! 20/20'}); }
     }
-    if(command === '!bayar') { 
+    if(command === '!join2') { 
+      const nama = args[1]; 
+      const slotKosong = server2.find(d => d.nama === ''); 
+      if(slotKosong) { slotKosong.nama = nama; sock.sendMessage(chat, {text: `✅ *${nama}* masuk SERVER 2 Slot ${slotKosong.slot}`}); } 
+      else { sock.sendMessage(chat, {text: '❌ SERVER 2 Penuh! 20/20'}); }
+    }
+
+    //!bayar1 15000 atau!bayar2 15000
+    if(command === '!bayar1') { 
       const jumlah = parseInt(args[1]); 
-      const member = dataKas.find(d => d.nama.toLowerCase() === senderName.toLowerCase()); 
-      if(member) { member.bayar += jumlah; sock.sendMessage(chat, {text: `*${senderName}* Sudah Pay Rp ${jumlah.toLocaleString()} \nSlot ${member.slot}`}); } 
-      else { sock.sendMessage(chat, {text: 'Kamu belum join dulu. Ketik!join Namamu'}); }
+      const member = server1.find(d => d.nama.toLowerCase() === senderName.toLowerCase()); 
+      if(member) { member.bayar += jumlah; sock.sendMessage(chat, {text: `✅ *${senderName}* Sudah Pay Rp ${jumlah.toLocaleString()} \nSERVER 1 Slot ${member.slot}`}); } 
+      else { sock.sendMessage(chat, {text: '❌ Kamu belum join SERVER 1 dulu. Ketik!join1 Namamu'}); }
     }
-    if(command === '!reset') { resetData(); sock.sendMessage(chat, {text: 'DATA DIBERSIHKAN!\n20 Slot sudah direset\nSiap open boost baru!'}); }
+    if(command === '!bayar2') { 
+      const jumlah = parseInt(args[1]); 
+      const member = server2.find(d => d.nama.toLowerCase() === senderName.toLowerCase()); 
+      if(member) { member.bayar += jumlah; sock.sendMessage(chat, {text: `✅ *${senderName}* Sudah Pay Rp ${jumlah.toLocaleString()} \nSERVER 2 Slot ${member.slot}`}); } 
+      else { sock.sendMessage(chat, {text: '❌ Kamu belum join SERVER 2 dulu. Ketik!join2 Namamu'}); }
+    }
+
+    // RESET SEMUA
+    if(command === '!reset') { 
+      resetData(); 
+      sock.sendMessage(chat, {text: 'DATA DIBERSIHKAN!\nSERVER 1 & SERVER 2 sudah direset\nSiap open boost baru!'}); 
+    }
   });
 }
 startBot();
